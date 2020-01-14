@@ -1,0 +1,14 @@
+.contact-list-item {
+  display: flex;
+}
+
+.contact-list-item__info {
+  display: flex;
+  width: 100%;
+  max-width: 400px;
+  justify-content: space-between;
+}
+
+.contact-list-item__btn--delete {
+  margin-left: 10px;
+}

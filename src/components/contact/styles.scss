@@ -1,0 +1,14 @@
+.contact {
+  width: 100%;
+  max-width: 400px;
+}
+
+.contact__item {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px;
+}
+
+.contact__item-info {
+  margin-left: auto;
+}

@@ -1,45 +1,99 @@
 import React, { Component } from 'react';
-import DataService from './services/DataService';
-import './App.css';
-import Contact from './components/contact';
-import ContactForm from './components/contactForm';
+import DataService from '../../services/DataService';
+import { ContactRouter } from '../contact';
+import { BrowserRouter as Router, Route } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { ActionTypes } from './redux/constants';
+import { ActionTypes } from '../../redux/constants';
+import ContactList from '../contactList';
+import { AddNewUserReduxForm } from '../contactForm/';
+import './App.css';
 
 class App extends Component {
 
     data = new DataService();
 
-    state = {
-        contact: null
-    };
-
     componentDidMount() {
-        const { getContactData } = this.props;
-        this.data.getContact(591)
-            .then((contact) => getContactData(contact))
+        const { getContactListData } = this.props;
+
+        this.data.getAllContacts()
+            .then((contactList) => getContactListData(contactList));
     }
 
+    onSubmitForm = (data) => {
+        const { addContact } = this.props;
+
+        this.data.addContact(data)
+            .then((newContact) =>  addContact(newContact));
+
+    };
+
+    onDeleteContact = data => {
+        const { deleteContact } = this.props;
+
+        this.data.deleteContact(data)
+            .then(() => deleteContact(data))
+    };
+
+
     render() {
+        const { contact, loading, contactList, getContactData, changeContact } = this.props;
+
         return (
             <div>
-                {this.state.contact ? <Contact contact={this.state.contact}/> : null}
-                {this.state.contact ? <ContactForm contact={this.state.contact}/> : null}
+                <Router>
+                    <Route exact path="/" render={() =>
+                        <ContactList
+                            contacts={contactList}
+                            loading={loading}
+                            onDelete={this.onDeleteContact}
+                            onViewContact={getContactData}
+                        />}
+                    />
+                    <Route exact path="/contact-info" render={() =>
+                        <ContactRouter
+                            contact={contact}
+                            onDelete={this.onDeleteContact}
+                        />}
+                    />
+                    <Route exact path="/add-contact"
+                           component={() => <AddNewUserReduxForm onSubmit={this.onSubmitForm} contact={contact} changeContact={changeContact}/>}/>
+                </Router>
             </div>
+
         );
     }
 }
 
-const mapStateToProps = state => {
+const mapStateToProps = ({ appReducer }) => {
     return {
-        contact: state.contact
+        contactList: appReducer.contactList,
+        contact: appReducer.contact,
+        loading: appReducer.loading,
+        redirect: appReducer.redirect,
     }
 };
 
 const mapDispatchToProps = dispatch => {
     return {
-        getContactData: () => dispatch({
-            type: ActionTypes.GET_CONTACTS
+        getContactListData: (data) => dispatch({
+            type: ActionTypes.GET_CONTACTS,
+            payload: data
+        }),
+        getContactData: (data) => dispatch({
+            type: ActionTypes.GET_CONTACT,
+            payload: data
+        }),
+        addContact: (data) => dispatch({
+            type: ActionTypes.ADD_CONTACT,
+            payload: data
+        }),
+        deleteContact: (data) => dispatch({
+            type: ActionTypes.DELETE_CONTACT,
+            payload: data
+        }),
+        changeContact: (data) => ({
+            type: ActionTypes.CHANGE_CONTACT,
+            payload: data
         })
     }
 };
